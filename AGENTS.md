@@ -32,11 +32,9 @@ Kod skopiowany 1:1 (serwisy, `DiagRunner`, `NotchPilot`,
 diff ze starym repo był czytelny:
 
 - RO: `origin/one-button-cleanup` = `5b4132a` (PR #80, jeden przycisk
-  „Posprzątaj wymiary”). W chwili kopii PR #80 był jeszcze **otwarty**,
-  ale to jeden commit nad `dev` (`e7959d6`), sprawdzony przez operatora na
-  żywym rysunku. Jeśli przed merge'em PR #80 dostanie kolejne commity,
-  trzeba je tu przenieść (`git -C "..\RO Axis Dimension Remover" diff
-  5b4132a origin/dev`).
+  „Posprzątaj wymiary”). PR #80 zmergowany 2026-10-05 jako `11d663a` —
+  porównanie `5b4132a...11d663a` przez API GitHuba: zero zmienionych
+  plików, więc kod tutaj = RO `dev` po merge'u.
 - Radius: `main` = `079f32f`.
 - Style Changer: `dev` = `44f516f`.
 
@@ -51,7 +49,7 @@ diff ze starym repo był czytelny:
 | `UpdateCheck.cs` per program, pasek nad przyciskiem | jeden `UpdateCheck.cs` (repo `HFT-Tekla-Tools-2025`), pasek nad zakładkami w `MainForm.cs` |
 | `Activated` w każdym oknie | `MainForm` woła `RefreshState()` widocznej zakładki przy fokusie okna i zmianie zakładki |
 | Radius: `FormClosing` zdejmuje zdarzenia Tekli | `Disposed` zakładki |
-| log RO i Radius: `logs\session_<czas>.log` | `logs\session_<czas>_ro.log` i `..._radius.log` (start w tej samej sekundzie dawał tę samą nazwę). Style Changer jak dotąd tylko w oknie |
+| log RO i Radius: `logs\session_<czas>.log` | RO: `logs\session_<czas>_ro.log`. Radius i Style Changer: tylko w oknie (Radius bez pliku od 2026-10-05, prośba operatora — razem z komunikatem „Log tej sesji zapisywany do pliku”) |
 | `installer\` per program, osobne `AppId` | jeden `installer\` z nowym `AppId`, instalacja do `%LOCALAPPDATA%\Programs\HFTTeklaTools\` — **obok** starych programów, nie zamiast |
 | `bin\x64\Debug\net48\*.exe` śledzone w gicie | `bin\` ignorowany w całości — przed `ISCC` trzeba zbudować |
 | wersje, tagi, gałęzie, release'y starych repo | nie dotyczą tego repo — patrz „Wydawanie” i „Git” niżej |
@@ -160,15 +158,14 @@ kopiować stamtąd. Nie edytować ich plików, nie commitować, nie przełącza�
 gałęzi, nie robić `pull`/`reset`/`stash`/`clean`, **nie budować w ich
 katalogach** (build nadpisuje śledzone `bin\`), nie ruszać ich release'ów,
 tagów, issue ani PR-ów; żadnych submodułów ani `ProjectReference` do nich.
-Ich zainstalowane kopie i skróty z pulpitu zostają. Jedyny wyjątek: PR #80
-w RO — merge robi operator.
+Ich zainstalowane kopie i skróty z pulpitu zostają. (Jedyny wyjątek, PR #80
+w RO, jest już zmergowany.)
 
 Wiki RO i Radius (linki w `AGENTS.md` zakładek) zostają przy starych repo,
 kopie robocze w `..\Archiwum\*.wiki`. To repo nie ma jeszcze własnego wiki.
 
 ## Otwarte
 
-- PR #80 w RO czeka na merge — patrz „Skąd jest kod”.
 - Ikona aplikacji (logo w `..\HFT-Logo`) — niezrobiona, nikt jeszcze nie
   prosił.
 - Instalator skompilowany, ale nie zainstalowany próbnie (wzorzec i lista

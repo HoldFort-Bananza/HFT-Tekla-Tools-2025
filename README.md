@@ -66,7 +66,7 @@ Properties na wybrany styl. Lista stylów pochodzi z plików `.vi` modelu.
 Program sam sprawdza przy starcie, czy jest nowsza wersja, i pokazuje wtedy
 pasek nad zakładkami. Bez internetu milczy.
 
-Log zakładek RO i R każdej sesji ląduje w `logs\` obok pliku `.exe`.
+Log zakładki RO każdej sesji ląduje w `logs\` obok pliku `.exe`.
 
 ## Diagnostyka bez GUI
 

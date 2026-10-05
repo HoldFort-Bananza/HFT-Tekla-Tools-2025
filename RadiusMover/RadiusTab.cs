@@ -1,6 +1,5 @@
 using System;
 using System.Drawing;
-using System.IO;
 using System.Windows.Forms;
 using Tekla.Structures.Drawing;
 
@@ -18,7 +17,7 @@ namespace RadiusDimensionMover
     /// i zwracany MoveResult.
     ///
     /// Zadania tej klasy: połączyć się z Teklą, nasłuchiwać jej zdarzeń
-    /// (zmiana rysunku), wołać serwis po kliknięciu i zapisywać log do pliku.
+    /// (zmiana rysunku), wołać serwis po kliknięciu i pisać log w oknie.
     ///
     /// Pełny opis projektu:
     /// https://github.com/HoldFort-Bananza/Radius-Dimention-Mover/wiki
@@ -55,12 +54,6 @@ namespace RadiusDimensionMover
         private Timer _connectRetryTimer;
         private const int ConnectRetryIntervalMs = 3000;
 
-        // Ścieżka do pliku logu tej sesji - zapisywana automatycznie, żeby
-        // nie trzeba było ręcznie kopiować zawartości okna logu przy
-        // zgłaszaniu problemu. Jeden plik na uruchomienie programu, w
-        // podfolderze "logs" obok pliku .exe.
-        private readonly string _logFilePath;
-
         private Button _runButton;
         private TextBox _logBox;
         private Label _statusLabel;
@@ -77,7 +70,6 @@ namespace RadiusDimensionMover
             // logu liczy odstęp od dołu względem tego rozmiaru, a domyślne
             // 150x150 UserControl dałoby log wystający poza zakładkę.
             Size = new System.Drawing.Size(500, 402);
-            _logFilePath = InitLogFile();
 
             // Jeden przycisk, bez żadnych parametrów. Cofania nie ma - w Tekli
             // działa zwykłe Ctrl+Z, więc program tylko pilnuje, żeby nie
@@ -129,9 +121,6 @@ namespace RadiusDimensionMover
             };
 
             Log($"===== Start sesji {DateTime.Now:yyyy-MM-dd HH:mm:ss} =====");
-            Log(_logFilePath != null
-                ? "Log tej sesji zapisywany do pliku: " + _logFilePath
-                : "UWAGA: nie udało się utworzyć pliku logu - log dostępny tylko w tym oknie.");
 
             TryConnectAndWatch();
         }
@@ -330,52 +319,12 @@ namespace RadiusDimensionMover
             }
         }
 
-        /// <summary>
-        /// Tworzy podfolder "logs" obok pliku .exe i zwraca ścieżkę do
-        /// nowego pliku logu na tę sesję (jedno uruchomienie programu =
-        /// jeden plik, wszystkie akcje dopisywane po kolei). Jeśli z
-        /// jakiegoś powodu nie da się utworzyć folderu/pliku (np. brak
-        /// uprawnień), program ma dalej działać - po prostu bez logu do pliku.
-        /// </summary>
-        private static string InitLogFile()
-        {
-            try
-            {
-                string logDir = Path.Combine(Application.StartupPath, "logs");
-                Directory.CreateDirectory(logDir);
-                // Przyrostek „_radius”, bo zakładka RO pisze do tego samego
-                // katalogu i przy starcie w tej samej sekundzie nazwy by się zgadzały.
-                return Path.Combine(logDir, $"session_{DateTime.Now:yyyyMMdd_HHmmss}_radius.log");
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Dopisuje wiersz do okna logu i do pliku sesji. Błąd zapisu do pliku
-        /// jest ignorowany - log to wygoda przy diagnozowaniu, nie funkcja
-        /// krytyczna, i nie może wywalić programu.
-        /// </summary>
+        // Tylko okno - bez pliku na dysku (operator, 2026-10-05: wywalić
+        // zapis logu na komputerze i komunikat o nim). Dawniej plik
+        // logs\session_<czas>.log obok .exe.
         private void Log(string message)
         {
             _logBox.AppendText(message + Environment.NewLine);
-
-            if (_logFilePath == null)
-            {
-                return;
-            }
-
-            try
-            {
-                File.AppendAllText(_logFilePath, message + Environment.NewLine);
-            }
-            catch
-            {
-                // Błąd zapisu do pliku loga nie może przerwać działania
-                // programu - to tylko dodatkowa wygoda, nie krytyczna funkcja.
-            }
         }
     }
 }
