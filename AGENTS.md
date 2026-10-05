@@ -51,7 +51,7 @@ diff ze starym repo był czytelny:
 | `UpdateCheck.cs` per program, pasek nad przyciskiem | jeden `UpdateCheck.cs` (repo `HFT-Tekla-Tools-2025`), pasek nad zakładkami w `MainForm.cs` |
 | `Activated` w każdym oknie | `MainForm` woła `RefreshState()` widocznej zakładki przy fokusie okna i zmianie zakładki |
 | Radius: `FormClosing` zdejmuje zdarzenia Tekli | `Disposed` zakładki |
-| log RO i Radius: `logs\session_<czas>.log` | `logs\session_<czas>_ro.log` i `..._radius.log` (start w tej samej sekundzie dawał tę samą nazwę). Style Changer jak dotąd tylko w oknie |
+| log RO i Radius: `logs\session_<czas>.log` | RO: `logs\session_<czas>_ro.log`. Radius i Style Changer: tylko w oknie (Radius bez pliku od 2026-10-05, prośba operatora — razem z komunikatem „Log tej sesji zapisywany do pliku”) |
 | `installer\` per program, osobne `AppId` | jeden `installer\` z nowym `AppId`, instalacja do `%LOCALAPPDATA%\Programs\HFTTeklaTools\` — **obok** starych programów, nie zamiast |
 | `bin\x64\Debug\net48\*.exe` śledzone w gicie | `bin\` ignorowany w całości — przed `ISCC` trzeba zbudować |
 | wersje, tagi, gałęzie, release'y starych repo | nie dotyczą tego repo — patrz „Wydawanie” i „Git” niżej |
