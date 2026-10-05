@@ -95,3 +95,9 @@ i wcześniejszego buildu (`bin/` nie jest w repozytorium).
 Zmiany idą przez gałąź i pull request do `dev`; `release` trzyma
 potwierdzony kod. Wiedza techniczna, historia decyzji i zasady pracy:
 [AGENTS.md](AGENTS.md) oraz `AGENTS.md` w katalogu każdego narzędzia.
+
+## Dokumentacja
+
+Pełna dokumentacja — jak działa każda zakładka, fakty o Tekla Open API,
+podejścia, które nie działają, diagnostyka i wydawanie — jest w
+[wiki projektu](https://github.com/HoldFort-Bananza/HFT-Tekla-Tools-2025/wiki).
