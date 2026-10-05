@@ -113,6 +113,12 @@ Sprawdzone 2026-10-05 na żywej Tekli: `--style-diag-active` i
 `--diag-dimension-style` łączą się (`GetConnectionStatus(): True`), GUI
 startuje, zakładka R rejestruje zdarzenia Tekli.
 
+Tego samego dnia operator potwierdził przez GUI na żywym rysunku, że
+**działają wszystkie trzy zakładki**. Styl widoku: dwa zaznaczone widoki →
+„zastosowano styl "W_View_Railing_Neighbour" na 2/2 widok(ach)”, oba z
+ramką rozszerzenia dla sąsiadów. Rozszerzona ramka może nachodzić na
+sąsiedni widok — to skutek większego widoku, nie błąd.
+
 ## Budowanie i wydawanie
 
 ```
