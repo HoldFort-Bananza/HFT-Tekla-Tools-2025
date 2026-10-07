@@ -22,7 +22,9 @@ Dla rysunków pojedynczej części z profilem RO (rura okrągła). Przycisk
    pomija. Przycisk **naprawdę kasuje**; Ctrl+Z cofa widok po widoku.
 2. **Wstawia wymiar wcięcia** — dla każdej skośnej ściany cięcia (≥ 6,5°)
    prostej rury dorysowuje brakującą długość i szerokość wcięcia, a płaski
-   wymiar promienia przy skosie zamienia na średnicę. Nie dubluje wymiarów,
+   wymiar promienia przy skosie zamienia na średnicę. Krótszy wymiar stawia
+   bliżej rury niż dłuższy — w razie potrzeby odsuwa dłuższy o rząd dalej.
+   Nie dubluje wymiarów,
    które już są.
 
 ### Wymiary R
@@ -95,3 +97,9 @@ i wcześniejszego buildu (`bin/` nie jest w repozytorium).
 Zmiany idą przez gałąź i pull request do `dev`; `release` trzyma
 potwierdzony kod. Wiedza techniczna, historia decyzji i zasady pracy:
 [AGENTS.md](AGENTS.md) oraz `AGENTS.md` w katalogu każdego narzędzia.
+
+## Dokumentacja
+
+Pełna dokumentacja — jak działa każda zakładka, fakty o Tekla Open API,
+podejścia, które nie działają, diagnostyka i wydawanie — jest w
+[wiki projektu](https://github.com/HoldFort-Bananza/HFT-Tekla-Tools-2025/wiki).

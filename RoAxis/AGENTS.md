@@ -559,6 +559,31 @@ Brama przeszła na `[35101]`: „tak jest dobrze na tym rysunku”.
    `[35270]` — szerokość `48` i średnica `48`: `Arial Narrow 2,50`, min. 5,
    `Fixed`, niezależny odczyt; operator: „nice”.
 
+32. **Krótszy wymiar bliżej części niż dłuższy** (2026-10-07, HFT Tekla
+   Tools, gałąź `shorter-row-closer`, wydane w v0.2.0). Operator: po
+   „Posprzątaj” wstawiona długość wcięcia stała NAD całkowitą długością.
+   `RowLine` (wariant A z pkt 30) brał pierwszy wolny rząd na zewnątrz, więc
+   zajęty rząd z dłuższym wymiarem = krótszy za nim. Teraz, gdy wybrany rząd
+   wypada za dłuższym wymiarem zachodzącym zakresem (rozpiętość wzdłuż
+   kierunku pomiaru = wartość wyświetlana, PUŁAPKA 2): (1) najdalszy wolny
+   rząd przed nim, nie bliżej części niż 5 mm papieru (min. odstęp stylu
+   `#HFT_Dim_W_Standard`, „min=5,00” z `--diag-dimension-style`); (2) brak
+   takiego rzędu — krótszy zajmuje rząd dłuższego, a wszystkie zestawy z tym
+   samym `Up` od tego rzędu dalej idą o rząd na zewnątrz (`set.Distance +=
+   krok`, `Fixed`, bo `Free` Tekla przestawia). **Pierwszy raz program
+   PRZESUWA istniejące wymiary Tekli** — dopiero po potwierdzonym wstawieniu
+   nowego. Dedup zestawów przez `IsSameDatabaseObject` (`GetIdentifier()`
+   na `StraightDimensionSet` niedostępne). Dry-run przed „Usuń” bywa
+   niemiarodajny (kasowane wymiary jeszcze zajmują rzędy) — przewidywać z
+   rzędów, które zostaną. **Brama przeszła na trzech rysunkach** (odczyt z
+   osobnego procesu, operator: „opisuje wszystko”): `[35099]` — `42` na
+   wolnym po Usuń rzędzie 100 pod `190` (wariant 1); `[35055]` — `173` z
+   100 na 200, `42` na 100 (wariant 2); `[35095]` — `407` z 100 na 200,
+   `35` i `90` na 100 (drugi wstawił się na wolny rząd bez drugiego
+   przesunięcia), `353` pod rurą, średnica i szerokości bez zmian.
+   ponytail w kodzie: przesuwa wszystkie dalsze rzędy, także niezachodzące
+   zakresem.
+
 **Proponowany następny krok:** brak otwartego zadania — kolejne testy na
 żywo z listy niżej albo nowa prośba operatora.
 

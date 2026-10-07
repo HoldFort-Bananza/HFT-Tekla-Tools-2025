@@ -113,6 +113,12 @@ Sprawdzone 2026-10-05 na żywej Tekli: `--style-diag-active` i
 `--diag-dimension-style` łączą się (`GetConnectionStatus(): True`), GUI
 startuje, zakładka R rejestruje zdarzenia Tekli.
 
+Tego samego dnia operator potwierdził przez GUI na żywym rysunku, że
+**działają wszystkie trzy zakładki**. Styl widoku: dwa zaznaczone widoki →
+„zastosowano styl "W_View_Railing_Neighbour" na 2/2 widok(ach)”, oba z
+ramką rozszerzenia dla sąsiadów. Rozszerzona ramka może nachodzić na
+sąsiedni widok — to skutek większego widoku, nie błąd.
+
 ## Budowanie i wydawanie
 
 ```
@@ -162,7 +168,16 @@ Ich zainstalowane kopie i skróty z pulpitu zostają. (Jedyny wyjątek, PR #80
 w RO, jest już zmergowany.)
 
 Wiki RO i Radius (linki w `AGENTS.md` zakładek) zostają przy starych repo,
-kopie robocze w `..\Archiwum\*.wiki`. To repo nie ma jeszcze własnego wiki.
+kopie robocze w `..\Archiwum\*.wiki` — nieaktualizowane.
+
+## Wiki
+
+https://github.com/HoldFort-Bananza/HFT-Tekla-Tools-2025/wiki — osobne repo
+(`HFT-Tekla-Tools-2025.wiki.git`), kopia robocza w `..\HFT Tekla Tools.wiki`,
+gałąź `master` bez ochrony (push wprost). Założone 2026-10-05: `Home`,
+`Mapa-zmian`, `Budowanie-i-wydawanie`, `Styl-widoku` oraz dosłowne kopie
+wiki RO (`RO-*`) i Radius (`R-*`) z przepisanymi linkami. Po każdej zmianie
+zachowania aktualizować od razu po commicie w kodzie.
 
 ## Otwarte
 

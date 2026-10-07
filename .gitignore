@@ -24,3 +24,6 @@ HANDOFF.md
 ## for a pull request. Names look like
 ## 2026-09-02-173917-this-session-is-being-continued-...txt
 20??-??-??-??????-*.txt
+
+## local diagnostic dumps (--diag-* output, drawing numbers)
+scans/

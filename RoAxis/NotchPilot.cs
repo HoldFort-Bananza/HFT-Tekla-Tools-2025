@@ -507,11 +507,12 @@ namespace RoAxisDimensionRemover
             var measureDir = longest ? axisView : perpView;
             double displayedValue = Math.Abs(chordVector.Dot(measureDir));
             var up = new TSG.Vector(side.X, side.Y, 0).GetNormal();
-            double line = RowLine(flatView, start, end, up);
+            var (line, pushOut) = RowLine(flatView, start, end, up);
+            string pushNote = pushOut.Count == 0 ? "" : $" odsunąłbym {pushOut.Count} zestaw(ów) wymiarów o rząd dalej,";
 
             if (dryRun)
             {
-                log($"[dry-run] brakująca {label} wcięcia: wstawiłbym {displayedValue:F2} mm, Start=({start.X:F2};{start.Y:F2};{start.Z:F2}) End=({end.X:F2};{end.Y:F2};{end.Z:F2}) Up=({side.X:F2};{side.Y:F2}) linia={line:F2} {ViewTag(flatView)}. Nic nie zmieniono.");
+                log($"[dry-run] brakująca {label} wcięcia: wstawiłbym {displayedValue:F2} mm, Start=({start.X:F2};{start.Y:F2};{start.Z:F2}) End=({end.X:F2};{end.Y:F2};{end.Z:F2}) Up=({side.X:F2};{side.Y:F2}) linia={line:F2}{pushNote} {ViewTag(flatView)}. Nic nie zmieniono.");
                 return;
             }
 
@@ -543,6 +544,20 @@ namespace RoAxisDimensionRemover
             if (!PinToLine(drawing, stored, line, up))
                 log($"{label}: wstawiony, ale nie udało się przypiąć położenia (Fixed) - Tekla może go przesunąć.");
             log($"Wstawiono brakującą {label} wcięcia {displayedValue:F2} mm, potwierdzone ponownym odczytem widoku.");
+
+            // Dopiero po udanym wstawieniu - przy porażce istniejące wymiary
+            // zostają, gdzie były. Przypięte Fixed, bo Free Tekla przestawia
+            // (zmierzone 2026-10-02, patrz wyżej).
+            double step = RowStepPaperMm * flatView.Attributes.Scale;
+            foreach (var set in pushOut)
+            {
+                set.Attributes.Placing.Placing = DimensionSetBaseAttributes.Placings.Fixed;
+                set.Distance += step;
+                if (!set.Modify() || !drawing.CommitChanges("Wymiar wcięcia - odsunięcie dłuższego"))
+                    log($"{label}: nie udało się odsunąć istniejącego wymiaru o rząd dalej - krótszy może stać na nim.");
+                else
+                    log($"Odsunięto istniejący wymiar o rząd dalej, żeby krótszy {label} wcięcia stał bliżej części.");
+            }
         }
 
         private static bool PinToLine(Drawing drawing, StraightDimension stored, double line, TSG.Vector up)
@@ -742,14 +757,15 @@ namespace RoAxisDimensionRemover
         // zachodzi zakresem; zajęta = rząd dalej (wariant A operatora,
         // 2026-10-02; wariant B - druga strona rury - odłożony). Brak linii w
         // tę stronę = rząd od własnego końca. Zwraca położenie linii wzdłuż up.
-        private static double RowLine(View view, TSG.Point start, TSG.Point end, TSG.Vector up)
+        private static (double Line, List<StraightDimensionSet> PushOut) RowLine(View view, TSG.Point start, TSG.Point end, TSG.Vector up)
         {
+            var none = new List<StraightDimensionSet>();
             var t = new TSG.Vector(-up.Y, up.X, 0);
             double lo = Math.Min(Along(start, t), Along(end, t)), hi = Math.Max(Along(start, t), Along(end, t));
             double own = Math.Max(Along(start, up), Along(end, up));
             double step = RowStepPaperMm * view.Attributes.Scale;
 
-            var rows = new List<(double Line, bool Blocked)>();
+            var rows = new List<(double Line, bool Blocked, bool Longer, StraightDimension Dim)>();
             var objects = view.GetAllObjects(new[] { typeof(StraightDimension) });
             while (objects.MoveNext())
             {
@@ -757,15 +773,48 @@ namespace RoAxisDimensionRemover
                 var dUp = new TSG.Vector(d.UpDirection.X, d.UpDirection.Y, 0).GetNormal();
                 if (dUp.Dot(up) < 0.99) continue;
                 double dLo = Math.Min(Along(d.StartPoint, t), Along(d.EndPoint, t)), dHi = Math.Max(Along(d.StartPoint, t), Along(d.EndPoint, t));
-                rows.Add((Along(d.StartPoint, dUp) + d.Distance, Math.Min(hi, dHi) - Math.Max(lo, dLo) > SamePointToleranceMm));
+                bool blocked = Math.Min(hi, dHi) - Math.Max(lo, dLo) > SamePointToleranceMm;
+                // Rozpiętość wzdłuż t = wartość wyświetlana (rzut na kierunek
+                // pomiaru), nie odległość końców 3D - PUŁAPKA 2 w AGENTS.md.
+                rows.Add((Along(d.StartPoint, dUp) + d.Distance, blocked, blocked && dHi - dLo > hi - lo + SamePointToleranceMm, d));
             }
 
             var lines = rows.Where(r => r.Line > own).Select(r => r.Line).OrderBy(l => l).ToList();
-            if (lines.Count == 0) return own + step;
+            if (lines.Count == 0) return (own + step, none);
+            double chosen = lines.Last() + step;
             foreach (var line in lines)
-                if (!rows.Any(r => Math.Abs(r.Line - line) < SamePointToleranceMm && r.Blocked)) return line;
-            return lines.Last() + step;
+                if (!rows.Any(r => Math.Abs(r.Line - line) < SamePointToleranceMm && r.Blocked)) { chosen = line; break; }
+
+            // Operator (2026-10-07): krótszy wymiar ma stać bliżej części niż
+            // dłuższy. Do teraz zajęty rząd = rząd dalej, więc długość wcięcia
+            // 42 lądowała NAD całkowitą długością ([35099]: 300 nad 190 na 200).
+            // Gdy wybrany rząd jest za dłuższym wymiarem zachodzącym zakresem:
+            // 1) najdalszy wolny rząd przed nim, nie bliżej części niż
+            //    MinGapPaperMm - [35099]: 100, zwolniony przez "Usuń";
+            // 2) brak takiego rzędu - krótszy zajmuje rząd dłuższego, a ten i
+            //    wszystkie dalsze rzędy w tę stronę idą o rząd dalej (kolejność
+            //    zostaje, nic na nic nie wchodzi) - [35055]: 173 na 100 tuż przy
+            //    rurze, 42 lądowało na 200.
+            // ponytail: odsuwa wszystkie dalsze rzędy, także te, które z nowym
+            // wymiarem nie zachodzą zakresem; zawęzić, jeśli będzie przeszkadzać.
+            var longer = rows.Where(r => r.Longer && r.Line > own).Select(r => r.Line).ToList();
+            if (longer.Count == 0 || chosen < longer.Min()) return (chosen, none);
+            double limit = longer.Min();
+            double minGap = MinGapPaperMm * view.Attributes.Scale;
+            for (double line = limit - step; line - own >= minGap; line -= step)
+                if (!rows.Any(r => Math.Abs(r.Line - line) < SamePointToleranceMm && r.Blocked)) return (line, none);
+
+            // Łańcuch to kilka wymiarów w jednym zestawie - przesuwamy zestaw raz.
+            var push = new List<StraightDimensionSet>();
+            foreach (var r in rows.Where(r => r.Line > limit - SamePointToleranceMm))
+                if (r.Dim.GetDimensionSet() is StraightDimensionSet set && !push.Any(p => p.IsSameDatabaseObject(set))) push.Add(set);
+            return (limit, push);
         }
+
+        // Najmniejszy odstęp linii wymiarowej od części: min. odstęp 5 mm
+        // papieru ze stylu #HFT_Dim_W_Standard - odczyt --diag-dimension-style
+        // na [35099] i [35270] ("min=5,00").
+        private const double MinGapPaperMm = 5;
 
         private static double Along(TSG.Point p, TSG.Vector v) => p.X * v.X + p.Y * v.Y;
 
