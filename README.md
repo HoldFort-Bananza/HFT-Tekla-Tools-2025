@@ -22,7 +22,9 @@ Dla rysunków pojedynczej części z profilem RO (rura okrągła). Przycisk
    pomija. Przycisk **naprawdę kasuje**; Ctrl+Z cofa widok po widoku.
 2. **Wstawia wymiar wcięcia** — dla każdej skośnej ściany cięcia (≥ 6,5°)
    prostej rury dorysowuje brakującą długość i szerokość wcięcia, a płaski
-   wymiar promienia przy skosie zamienia na średnicę. Nie dubluje wymiarów,
+   wymiar promienia przy skosie zamienia na średnicę. Krótszy wymiar stawia
+   bliżej rury niż dłuższy — w razie potrzeby odsuwa dłuższy o rząd dalej.
+   Nie dubluje wymiarów,
    które już są.
 
 ### Wymiary R
