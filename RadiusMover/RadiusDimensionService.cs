@@ -1130,7 +1130,7 @@ namespace RadiusDimensionMover
                 new PlacingDistanceAttributes(2.0, Math.Abs(paperDistance)));
             p.Dimension.Attributes = attrs;
             p.Dimension.Distance = paperDistance;
-            // Półprosta linii odniesienia zwracana i tak - jak przed sprawdzaniem
+            // Promień linii odniesienia zwracany i tak - jak przed sprawdzaniem
             // wyniku, żeby nie zmieniać dociągania opisów.
             modified = p.Dimension.Modify();
             if (!modified)
