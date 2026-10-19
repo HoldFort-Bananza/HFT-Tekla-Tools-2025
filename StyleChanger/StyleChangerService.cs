@@ -117,7 +117,7 @@ namespace StyleChanger
             }
 
             // TransactionManager nie dotyczy obiektów rysunkowych - zmianę
-            // utrwala CommitChanges() na rysunku, patrz ../CLAUDE.md. Jedno
+            // utrwala CommitChanges() na rysunku, patrz AGENTS.md w Projekty. Jedno
             // wywołanie na koniec zapisuje wszystkie zmodyfikowane widoki
             // naraz, zamiast commitować po każdym z osobna.
             if (!drawing.CommitChanges())

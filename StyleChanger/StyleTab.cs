@@ -28,8 +28,8 @@ namespace StyleChanger
         public StyleTab()
         {
             // Rozmiar z dawnego okna (kontrolki 15 + 470 + 15, log kończy się
-            // 15 px nad dołem), ustawiony PRZED dodaniem kontrolek: kotwica
-            // logu liczy odstęp od dołu względem tego rozmiaru, a domyślne
+            // 15 px nad dołem), ustawiony PRZED dodaniem kontrolek: kotwice
+            // liczą odstęp od dołu i od prawej względem tego rozmiaru, a domyślne
             // 150x150 UserControl dałoby log wystający poza zakładkę.
             Size = new System.Drawing.Size(500, 354);
             _styleCombo = new ComboBox
@@ -37,7 +37,8 @@ namespace StyleChanger
                 Left = 15,
                 Top = 15,
                 Width = 470,
-                DropDownStyle = ComboBoxStyle.DropDownList
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
             };
 
             _runButton = new Button
@@ -46,7 +47,8 @@ namespace StyleChanger
                 Left = 15,
                 Top = 45,
                 Width = 470,
-                Height = 40
+                Height = 40,
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
             };
             _runButton.Click += RunButton_Click;
 
@@ -56,6 +58,7 @@ namespace StyleChanger
                 Top = 94,
                 Width = 470,
                 Height = 20,
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
                 ForeColor = Color.DarkSlateGray
             };
 
@@ -65,7 +68,7 @@ namespace StyleChanger
                 Top = 119,
                 Width = 470,
                 Height = 220,
-                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left,
+                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
                 Multiline = true,
                 ScrollBars = ScrollBars.Vertical,
                 ReadOnly = true,

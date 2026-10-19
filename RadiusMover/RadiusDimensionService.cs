@@ -29,13 +29,14 @@ namespace RadiusDimensionMover
     /// tego projektu.
     ///
     /// Zanim zmienisz sposób rozstawiania, przeczytaj listę ślepych uliczek -
-    /// dziewięć podejść zostało już przetestowanych i odrzuconych, z pomiarami:
+    /// osiemnaście podejść zostało już przetestowanych i odrzuconych, z pomiarami:
     /// https://github.com/HoldFort-Bananza/Radius-Dimention-Mover/wiki/4-Slepe-uliczki
     /// </summary>
     public class RadiusDimensionService
     {
         // --- Parametry wyszukiwania wolnego miejsca dla trybu AWARYJNEGO
-        // (Placing=Free) - w jednostkach MODELU, tak jak Distance. ---
+        // (Placing=Free) - w jednostkach MODELU; przed zapisem dzielone przez
+        // skalę widoku, bo PlacingDistanceAttributes są na papierze. ---
         private const double SearchMarginMm = 30.0;
         private const double MinimalDistanceMm = 15.0;
         private const double MaximalDistanceMm = 300.0;
@@ -47,7 +48,7 @@ namespace RadiusDimensionMover
 
         // --- Rozstawianie wymiarów R: WYŁĄCZNIE ze współrzędnych z API.
         // Żadnych zrzutów ekranu ani analizy pikseli - patrz
-        // TryPlaceByGeometry().
+        // ComputePlan().
         //
         // UWAGA NA JEDNOSTKI - to najczęstsze źródło błędów w tym projekcie:
         //   ArcPoint1/2/3, bryła części, punkty linii wymiarowych  -> MODEL
@@ -86,7 +87,7 @@ namespace RadiusDimensionMover
         // Historia tej stałej jest myląca i warto ją znać: było 120, potem na
         // życzenie 60, teraz znowu 120. Obniżenie do 60 wyszło z założenia, że
         // po naprawieniu jednostek Distance właściwą linią obrony jest test
-        // przecięcia drogi do środka (patrz TryPlaceByGeometry). Okazało się
+        // przecięcia drogi do środka (patrz ComputePlan). Okazało się
         // niepełne - ten test wyłapuje tylko kolizję z INNYM WYMIAREM, a nie
         // to, że tekst fizycznie nie ma gdzie usiąść w wąskiej blasze.
         private const double InsideMinShortFaceMm = 120.0;
@@ -212,12 +213,12 @@ namespace RadiusDimensionMover
 
         /// <summary>
         /// AUTOMATYCZNE rozstawianie wszystkich wymiarów R na aktywnym
-        /// rysunku, unikając kolizji z innymi elementami - używając
-        /// WBUDOWANEGO w Teklę silnika auto-rozstawiania wymiarów
-        /// (RadiusDimensionAttributes.Placing = Placings.Free), a nie
-        /// własnych zgadywanek.
+        /// rysunku, unikając kolizji z innymi elementami. Dziś główna droga
+        /// to własne wyliczenie z geometrii (ComputePlan → AlignPlans →
+        /// ApplyPlan w trybie Fixed); opisany niżej silnik Tekli
+        /// (Placing = Free, PlaceUsingFreeMode) został wariantem awaryjnym.
         ///
-        /// Znalezione po tym, jak wcześniejsze próby (patrz historia w git)
+        /// Historia - znalezione po tym, jak wcześniejsze próby (patrz historia w git)
         /// zawiodły: RadiusDimension nie ma żadnej metody do odczytania
         /// swojej rzeczywistej pozycji na rysunku (ArcPoint1/2/3 są stałe,
         /// brak IAxisAlignedBoundingBox, GetRelatedObjects()/GetDimensionSet()
@@ -384,8 +385,8 @@ namespace RadiusDimensionMover
             {
                 try
                 {
-                    leaderRays.Add(ApplyPlan(plan, log));
-                    result.MovedCount++;
+                    leaderRays.Add(ApplyPlan(plan, log, out bool modified));
+                    if (modified) result.MovedCount++;
                 }
                 catch (Exception ex)
                 {
@@ -653,29 +654,6 @@ namespace RadiusDimensionMover
             };
         }
 
-        /// <summary>
-        /// WYRÓWNUJE wymiary idące w tę samą stronę, żeby ich teksty leżały w
-        /// jednej linii - bez tego dwa wymiary wyrzucone „do góry" lądują na
-        /// różnych wysokościach i rysunek wygląda niechlujnie.
-        ///
-        /// Jak to działa:
-        /// 1. Plany są grupowane po **dominującym kierunku** tekstu (góra,
-        ///    dół, lewo, prawo) - bierzemy większą składową wektora kierunku.
-        /// 2. W grupie „góra"/„dół" wyrównujemy współrzędną **Y** tekstów, w
-        ///    grupie „lewo"/„prawo" współrzędną **X**.
-        /// 3. Docelową wartością jest ta NAJDALSZA w grupie, więc żaden wymiar
-        ///    nie zostaje przyciągnięty bliżej, niż wynikało z jego własnego
-        ///    wyliczenia. To ważne: każda odległość została policzona tak, żeby
-        ///    ominąć przeszkody w swoim kierunku, a skracanie mogłoby ją
-        ///    wepchnąć z powrotem na linię wymiarową.
-        ///
-        /// Pozycja tekstu jest przybliżana jako `łuk + kierunek × odległość` -
-        /// API nie podaje jej wprost, ale do wyrównania między sobą to
-        /// wystarcza, bo błąd modelu jest dla wszystkich wymiarów ten sam.
-        ///
-        /// Wymiary umieszczone WEWNĄTRZ części są pomijane - tam nie chodzi o
-        /// równy szereg, a o zmieszczenie się w obrysie.
-        /// </summary>
         /// <summary>
         /// Rozsuwa teksty dwóch wymiarów R, które wylądowały jeden na drugim.
         ///
@@ -1010,6 +988,29 @@ namespace RadiusDimensionMover
                 : (dirX > 0 ? 'P' : 'L');
         }
 
+        /// <summary>
+        /// WYRÓWNUJE wymiary idące w tę samą stronę, żeby ich teksty leżały w
+        /// jednej linii - bez tego dwa wymiary wyrzucone „do góry" lądują na
+        /// różnych wysokościach i rysunek wygląda niechlujnie.
+        ///
+        /// Jak to działa:
+        /// 1. Plany są grupowane po **dominującym kierunku** tekstu (góra,
+        ///    dół, lewo, prawo) - bierzemy większą składową wektora kierunku.
+        /// 2. W grupie „góra"/„dół" wyrównujemy współrzędną **Y** tekstów, w
+        ///    grupie „lewo"/„prawo" współrzędną **X**.
+        /// 3. Docelową wartością jest ta NAJDALSZA w grupie, więc żaden wymiar
+        ///    nie zostaje przyciągnięty bliżej, niż wynikało z jego własnego
+        ///    wyliczenia. To ważne: każda odległość została policzona tak, żeby
+        ///    ominąć przeszkody w swoim kierunku, a skracanie mogłoby ją
+        ///    wepchnąć z powrotem na linię wymiarową.
+        ///
+        /// Pozycja tekstu jest przybliżana jako `łuk + kierunek × odległość` -
+        /// API nie podaje jej wprost, ale do wyrównania między sobą to
+        /// wystarcza, bo błąd modelu jest dla wszystkich wymiarów ten sam.
+        ///
+        /// Wymiary umieszczone WEWNĄTRZ części są pomijane - tam nie chodzi o
+        /// równy szereg, a o zmieszczenie się w obrysie.
+        /// </summary>
         private static void AlignPlans(List<PlacementPlan> plans, Action<string> log)
         {
             // Klucz grupy: 'G'/'D' dla pionu, 'L'/'P' dla poziomu.
@@ -1115,7 +1116,7 @@ namespace RadiusDimensionMover
         ///
         /// Tryb Fixed, nie Free - tylko wtedy nasza wartość jest respektowana.
         /// </summary>
-        private static LeaderRay ApplyPlan(PlacementPlan p, Action<string> log)
+        private static LeaderRay ApplyPlan(PlacementPlan p, Action<string> log, out bool modified)
         {
             // OutwardFlip odwraca znak dla łuków wklęsłych - bez tego tekst
             // wcięcia leci w materiał. Patrz CollectRoundingShapes.
@@ -1129,7 +1130,13 @@ namespace RadiusDimensionMover
                 new PlacingDistanceAttributes(2.0, Math.Abs(paperDistance)));
             p.Dimension.Attributes = attrs;
             p.Dimension.Distance = paperDistance;
-            p.Dimension.Modify();
+            // Półprosta linii odniesienia zwracana i tak - jak przed sprawdzaniem
+            // wyniku, żeby nie zmieniać dociągania opisów.
+            modified = p.Dimension.Modify();
+            if (!modified)
+            {
+                log("     UWAGA: Modify() zwróciło false - Tekla nie przyjęła zmiany tego wymiaru.");
+            }
 
             log("     (Distance na papierze = " + paperDistance.ToString("0.#")
                 + " przy skali " + p.Scale.ToString("0.#") + ")");
@@ -2229,32 +2236,11 @@ namespace RadiusDimensionMover
         }
 
         /// <summary>
-        /// Ustawia wymiar R na tryb Fixed z podanym (podpisanym) Distance w
-        /// jednostkach MODELU - w trybie Fixed to WŁAŚNIE znak Distance
-        /// kontroluje, po której stronie linii bazowej ląduje tekst (w
-        /// przeciwieństwie do trybu Free, gdzie strona jest ustalona na
-        /// sztywno per wymiar i niezależna od żadnego atrybutu - patrz
-        /// komentarz w TryPlaceSmart).
-        /// </summary>
-        private static void SetFixedDistance(RadiusDimension rd, Drawing activeDrawing, double modelDistance)
-        {
-            var attrs = rd.Attributes;
-            attrs.Placing = new DimensionSetBaseAttributes.DimensionPlacingAttributes(
-                DimensionSetBaseAttributes.Placings.Fixed,
-                new PlacingDirectionAttributes(true, true),
-                new PlacingDistanceAttributes(2.0, Math.Abs(modelDistance)));
-            rd.Attributes = attrs;
-            rd.Distance = modelDistance;
-            rd.Modify();
-            activeDrawing.CommitChanges();
-        }
-
-        /// <summary>
         /// Rozstawia JEDEN wymiar R WBUDOWANYM w Teklę silnikiem
         /// auto-rozstawiania (Attributes.Placing = Placings.Free) - ten sam
         /// mechanizm co przy StraightDimensionSet. Używane jako wariant
-        /// AWARYJNY (gdy wizyjne wymuszanie strony, TryPlaceSmart, jest
-        /// niedostępne albo zawiedzie) - Free unika kolizji z innymi
+        /// AWARYJNY (gdy ComputePlan nie da planu, np. przy zdegenerowanym
+        /// łuku) - Free unika kolizji z innymi
         /// elementami, ale (potwierdzone empirycznie) czasem ląduje w
         /// środku konturu części, bo wybrana strona jest ustalona na sztywno
         /// per wymiar i żaden atrybut (Direction Positive/Negative) tego nie
@@ -2300,7 +2286,7 @@ namespace RadiusDimensionMover
 
             if (modifyResult)
             {
-                log("  Wymiar R rozstawiony trybem awaryjnym (Tekla Placing=Free, margines " + SearchMarginMm + "mm, zakres " + MinimalDistanceMm + "-" + MaximalDistanceMm + "mm na papierze).");
+                log("  Wymiar R rozstawiony trybem awaryjnym (Tekla Placing=Free, margines " + SearchMarginMm + "mm, zakres " + MinimalDistanceMm + "-" + MaximalDistanceMm + "mm w modelu).");
             }
 
             return modifyResult;
@@ -2350,7 +2336,7 @@ namespace RadiusDimensionMover
             }
 
             log("  Dociągnięto " + tightened + " opis(ów) bliżej elementu (zakres "
-                + MarkMinimalDistanceMm + "-" + MarkMaximalDistanceMm + "mm na papierze).");
+                + MarkMinimalDistanceMm + "-" + MarkMaximalDistanceMm + "mm w modelu).");
         }
 
         /// <summary>

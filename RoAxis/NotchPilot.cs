@@ -656,15 +656,18 @@ namespace RoAxisDimensionRemover
                     // Linia starego promienia - średnica ma stanąć dokładnie tam.
                     double line = Along(start, up) + dimension.Distance;
 
+                    // Przed dry-run (tylko odczyt): dawniej dry-run zgłaszał też
+                    // promienie, przy których średnica już stoi i realny zapis
+                    // by je pominął.
+                    if (HasSameDimension(view, tip, oppositeTip, axisView))
+                    {
+                        continue; // średnica już jest - nie dublujemy
+                    }
+
                     if (dryRun)
                     {
                         log($"[dry-run] rozciągnąłbym wymiar promienia {offset:F2} mm do średnicy {diameter:F2} mm: koniec ({other.X:F2};{other.Y:F2}) -> ({oppositeTip.X:F2};{oppositeTip.Y:F2}) linia={line:F2} {ViewTag(view)}. Nic nie zmieniono.");
                         continue;
-                    }
-
-                    if (HasSameDimension(view, tip, oppositeTip, axisView))
-                    {
-                        continue; // średnica już jest - nie dublujemy
                     }
 
                     // Nie Modify() z nowym punktem: zmierzone 2026-09-29 na

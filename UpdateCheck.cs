@@ -93,15 +93,8 @@ namespace HFTTeklaTools
         /// </summary>
         private static Version GetInstalledVersion()
         {
-            try
-            {
-                Version v = Assembly.GetExecutingAssembly().GetName().Version;
-                return v == null ? null : Normalize(v);
-            }
-            catch
-            {
-                return null;
-            }
+            Version v = Assembly.GetExecutingAssembly().GetName().Version;
+            return v == null ? null : Normalize(v);
         }
 
         /// <summary>
@@ -179,11 +172,7 @@ namespace HFTTeklaTools
                 v.Build < 0 ? 0 : v.Build);
         }
 
-        private static string Format(Version v)
-        {
-            return v.Build > 0
-                ? v.Major + "." + v.Minor + "." + v.Build
-                : v.Major + "." + v.Minor;
-        }
+        // Zawsze trzy składowe, jak w tagu - dawniej "0.3" dla v0.3.0.
+        private static string Format(Version v) => v.ToString(3);
     }
 }

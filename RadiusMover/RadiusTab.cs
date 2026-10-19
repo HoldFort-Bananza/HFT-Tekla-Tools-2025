@@ -66,21 +66,21 @@ namespace RadiusDimensionMover
         public RadiusTab()
         {
             // Rozmiar z dawnego okna (kontrolki 15 + 470 + 15, log kończy się
-            // 15 px nad dołem), ustawiony PRZED dodaniem kontrolek: kotwica
-            // logu liczy odstęp od dołu względem tego rozmiaru, a domyślne
+            // 15 px nad dołem), ustawiony PRZED dodaniem kontrolek: kotwice
+            // liczą odstęp od dołu i od prawej względem tego rozmiaru, a domyślne
             // 150x150 UserControl dałoby log wystający poza zakładkę.
             Size = new System.Drawing.Size(500, 402);
 
             // Jeden przycisk, bez żadnych parametrów. Cofania nie ma - w Tekli
-            // działa zwykłe Ctrl+Z, więc program tylko pilnuje, żeby nie
-            // przesunąć dwa razy pod rząd tego samego rysunku.
+            // działa zwykłe Ctrl+Z.
             _runButton = new Button
             {
                 Text = "Przesuń wszystkie wymiary R (unikaj kolizji)",
                 Left = 15,
                 Top = 15,
                 Width = 470,
-                Height = 40
+                Height = 40,
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
             };
             _runButton.Click += RunButton_Click;
 
@@ -90,6 +90,7 @@ namespace RadiusDimensionMover
                 Top = 64,
                 Width = 470,
                 Height = 20,
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
                 ForeColor = Color.DarkSlateGray
             };
 
@@ -99,7 +100,7 @@ namespace RadiusDimensionMover
                 Top = 89,
                 Width = 470,
                 Height = 298,
-                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left,
+                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
                 Multiline = true,
                 ScrollBars = ScrollBars.Vertical,
                 ReadOnly = true,

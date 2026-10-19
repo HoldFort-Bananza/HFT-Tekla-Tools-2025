@@ -106,8 +106,9 @@ Pełna lista RO (`--diag-notch-match`, `--diag-notch-insert-dryrun`,
 `--diag-notch-raw`, `--diag-view-objects`, `--diag-view-bounds`,
 `--diag-connection`) i ich znaczenie: `RoAxis\AGENTS.md`, „Jak testować bez
 klikania w GUI”. Tryby z `"[Mark]"` otwierają rysunek na ekranie operatora —
-nie puszczać w trakcie jego testu. Nieznany przełącznik albo brak `[Mark]`
-uruchamia GUI, które blokuje polecenie do timeoutu.
+nie puszczać w trakcie jego testu. Nieznany przełącznik `--…` albo brak
+`[Mark]` kończy z kodem 1 i komunikatem (od 2026-10-19; dawniej uruchamiał
+GUI, które blokowało polecenie do timeoutu).
 
 Sprawdzone 2026-10-05 na żywej Tekli: `--style-diag-active` i
 `--diag-dimension-style` łączą się (`GetConnectionStatus(): True`), GUI
