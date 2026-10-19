@@ -11,7 +11,7 @@
 ; sie obok starych programow, nie zamiast nich.
 
 #define MyAppName "HFT Tekla Tools"
-#define MyAppVersion "0.2.0"
+#define MyAppVersion "0.2.1"
 #define MyAppPublisher "HoldFort-Bananza"
 #define MyAppExeName "HFTTeklaTools.exe"
 
