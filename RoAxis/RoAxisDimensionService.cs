@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using Tekla.Structures.Drawing;
 using TSM = Tekla.Structures.Model;
 using TSG = Tekla.Structures.Geometry3d;
@@ -30,7 +29,8 @@ namespace RoAxisDimensionRemover
     /// </summary>
     public static class RoAxisDimensionService
     {
-        // mm na papierze. Promień profilu RO nigdy nie schodzi blisko zera,
+        // Jednostki modelu (mm) - porównywane ze StartPoint/EndPoint, które są
+        // w jednostkach modelu. Promień profilu RO nigdy nie schodzi blisko zera,
         // więc ten margines bezpiecznie odróżnia "dokładnie na osi" od
         // "na powierzchni" nawet dla najcieńszych rur.
         internal const double AxisToleranceMm = 0.5;
@@ -54,9 +54,9 @@ namespace RoAxisDimensionRemover
         internal const double SameJointDistanceMm = 300.0;
 
         /// <summary>
-        /// Kasuje wszystkie wymiary "do osi" w JEDNYM widoku (ten, który
-        /// operator wybrał Pickerem w MainForm - patrz PUŁAPKA 5 wyżej,
-        /// dlaczego to musi być per widok, nie cały arkusz naraz). Zwraca
+        /// Kasuje wszystkie wymiary "do osi" w JEDNYM widoku (przycisk woła
+        /// to po kolei dla każdego widoku arkusza - patrz PUŁAPKA 5 wyżej,
+        /// dlaczego per widok, nie cały arkusz naraz). Zwraca
         /// liczbę skasowanych (w dry-run: znalezionych) wymiarów.
         /// </summary>
         public static int RemoveAxisDimensions(Drawing drawing, ViewBase view, Action<string> log, bool dryRun = false)
@@ -169,11 +169,6 @@ namespace RoAxisDimensionRemover
             return removedCount;
         }
 
-        // "RO" to konwencja nazewnictwa profili w katalogu Tekli (rura
-        // okrągła) - zmierzone na [35021]/[3.5013]: Profile.ProfileString
-        // = "RO42.4*3.2". Brak połączenia z Model albo brak części z takim
-        // profilem w widoku = bezpieczny domyślny wynik "false" (nic nie
-        // kasuj), nigdy "zgaduj, że to RO".
         // Brak połączenia z Model = "true" (nic nie kasuj), tak jak w
         // ViewHasRoProfile - nigdy nie zgadujemy, że rura jest prosta.
         private static bool ViewHasBentPart(ViewBase view)
@@ -241,6 +236,11 @@ namespace RoAxisDimensionRemover
 
         private static double AlongAxis(TSG.Point p, TSG.Vector axis) => p.X * axis.X + p.Y * axis.Y + p.Z * axis.Z;
 
+        // "RO" to konwencja nazewnictwa profili w katalogu Tekli (rura
+        // okrągła) - zmierzone na [35021]/[3.5013]: Profile.ProfileString
+        // = "RO42.4*3.2". Brak połączenia z Model albo brak części z takim
+        // profilem w widoku = bezpieczny domyślny wynik "false" (nic nie
+        // kasuj), nigdy "zgaduj, że to RO".
         private static bool ViewHasRoProfile(ViewBase view, Action<string> log)
         {
             var model = new TSM.Model();

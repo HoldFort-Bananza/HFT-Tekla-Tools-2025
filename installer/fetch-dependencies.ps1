@@ -23,6 +23,9 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+# Pasek postepu Invoke-WebRequest w PowerShell 5.1 spowalnia pobieranie
+# wielokrotnie (rysowany przy kazdym pakiecie danych).
+$ProgressPreference = "SilentlyContinue"
 
 $packages = @(
     @{ Id = "mono.cecil";                              Version = "0.11.5";  Lib = "net40" }
@@ -88,6 +91,9 @@ try {
         Write-Warning "Nie udalo sie pobrac nastepujacych pakietow: $($failed -join ', ')"
         Write-Warning "Program moze nie dzialac poprawnie. Sprawdz polaczenie internetowe i uruchom instalator ponownie,"
         Write-Warning "albo zbuduj program z kodu zrodlowego (patrz README) na komputerze z internetem."
+        # Inno Setup nie sprawdza kodu wyjscia (shellexec), a okno konsoli
+        # znika od razu - bez pauzy operator nie zobaczylby ostrzezenia.
+        Read-Host "Nacisnij Enter, aby zamknac"
         exit 1
     }
 

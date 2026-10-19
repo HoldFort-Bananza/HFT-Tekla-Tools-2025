@@ -13,7 +13,7 @@ namespace HFTTeklaTools
             // Przełączniki RO bez zmian względem dawnego programu; jedyny
             // konflikt nazw - --diag-active był w RO i w Style Changer - więc
             // wersja Style Changer dostała przedrostek --style-.
-            // Przełącznik z brakującym "[Mark]" (albo nieznany) uruchamia GUI.
+            // Przełącznik z brakującym "[Mark]" (albo nieznany) kończy z kodem 1.
             string mark = args.Length > 1 ? args[1] : null;
             switch (args.Length > 0 ? args[0] : null)
             {
@@ -33,6 +33,14 @@ namespace HFTTeklaTools
                 case "--style-diag-active": StyleChanger.DiagRunner.RunOnActiveDrawing(); return;
                 case "--test-other-drawing": StyleChanger.DiagRunner.TestOnOtherDrawing(); return;
                 case "--dump-style" when mark != null: StyleChanger.DiagRunner.DumpStyleFile(mark); return;
+
+                // Literówka albo brak "[Mark]" uruchamiała GUI, które w
+                // automatyzacji blokowało polecenie do timeoutu.
+                case string s when s.StartsWith("--"):
+                    Console.WriteLine("Nieznany przełącznik albo brak argumentu: " + string.Join(" ", args)
+                        + ". Lista: AGENTS.md, „Tryb konsolowy”.");
+                    Environment.ExitCode = 1;
+                    return;
             }
 
             Application.EnableVisualStyles();

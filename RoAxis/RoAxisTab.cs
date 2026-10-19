@@ -31,8 +31,8 @@ namespace RoAxisDimensionRemover
         public RoAxisTab()
         {
             // Rozmiar z dawnego okna (kontrolki 15 + 470 + 15, log kończy się
-            // 15 px nad dołem), ustawiony PRZED dodaniem kontrolek: kotwica
-            // logu liczy odstęp od dołu względem tego rozmiaru, a domyślne
+            // 15 px nad dołem), ustawiony PRZED dodaniem kontrolek: kotwice
+            // liczą odstęp od dołu i od prawej względem tego rozmiaru, a domyślne
             // 150x150 UserControl dałoby log wystający poza zakładkę.
             Size = new System.Drawing.Size(500, 431);
             _cleanupButton = new Button
@@ -41,7 +41,8 @@ namespace RoAxisDimensionRemover
                 Left = 15,
                 Top = 15,
                 Width = 470,
-                Height = 75
+                Height = 75,
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
             };
             _cleanupButton.Click += CleanupButton_Click;
 
@@ -51,6 +52,7 @@ namespace RoAxisDimensionRemover
                 Top = 96,
                 Width = 470,
                 Height = 20,
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
                 ForeColor = Color.DarkSlateGray
             };
 
@@ -60,7 +62,7 @@ namespace RoAxisDimensionRemover
                 Top = 121,
                 Width = 470,
                 Height = 295,
-                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left,
+                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
                 Multiline = true,
                 ScrollBars = ScrollBars.Vertical,
                 ReadOnly = true,

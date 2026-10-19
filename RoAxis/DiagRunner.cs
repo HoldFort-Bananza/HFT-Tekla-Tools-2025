@@ -40,10 +40,7 @@ namespace RoAxisDimensionRemover
             if (drawing != null) RunOn(drawing);
         }
 
-        // Picker (wybór widoku przez kliknięcie w MainForm) wymaga GUI, więc
-        // z linii komend nie da się go odtworzyć - diag przechodzi więc po
-        // WSZYSTKICH widokach na arkuszu, w przeciwieństwie do przycisku w
-        // MainForm, który działa na jednym widoku wskazanym przez operatora.
+        // Po WSZYSTKICH widokach na arkuszu, jak przycisk w RoAxisTab.
         private static void RunOn(Drawing drawing)
         {
             Log($"Aktywny rysunek: {drawing.Mark} / {drawing.Name}");
@@ -61,7 +58,7 @@ namespace RoAxisDimensionRemover
         /// żadnego na ekranie - `GetSheet().GetAllObjects()` działa na
         /// uchwycie Drawing bez SetActiveDrawing) i loguje te, które mają
         /// choć jeden wymiar do osi. Cel: dobierać rysunki testowe po
-        /// danych. Trwa > 10 min na całym modelu - uruchamiać w tle.
+        /// danych. Trwa ponad godzinę na całym modelu - uruchamiać w tle.
         /// </summary>
         // marksFile: plik z listą Mark (po jednym w linii) - skan tylko tych
         // rysunków, z logiem każdego wymiaru. Pełny skan 2298 rysunków
@@ -422,7 +419,7 @@ namespace RoAxisDimensionRemover
                 Log($"[notch-raw] widok Origin={PointStr(view.Origin)}");
                 foreach (var (mid, _) in AxisDimensionMids(view))
                 {
-                    Log($"[notch-raw]   wymiar do osi (do usunięcia w tym widoku): mid={PointStr(mid)}");
+                    Log($"[notch-raw]   wymiar do osi (przed filtrem ścięcia): mid={PointStr(mid)}");
                 }
 
                 var cs = view.DisplayCoordinateSystem;
@@ -732,8 +729,9 @@ namespace RoAxisDimensionRemover
             }
         }
 
-        // Te same wymiary, które RemoveAxisDimensions by skasował (bez
-        // guardów rysunku/profilu - diag ma je pokazać zawsze).
+        // Wymiary dotykające osi jak w RemoveAxisDimensions, ale bez guardów
+        // rysunku/profilu i BEZ filtra InCutZone (v0.3.6) - to nadzbiór
+        // tego, co skasowałby przycisk.
         private static IEnumerable<(TSG.Point Mid, double OwnLength)> AxisDimensionMids(View view)
         {
             var dims = view.GetAllObjects(new[] { typeof(StraightDimension) });
